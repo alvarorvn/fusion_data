@@ -13,18 +13,21 @@ mongodb.MongoClient.connect(url, {useNewUrlParser: true }, (err, client)=>{
         process.exit(1)
     }else{
         console.log('Connected to MongoDB server...')
+        console.log(`Launching ${task.length} parallel task(s)`)
         const db = client.db('fusion_data')
 
-        var lot = 0
+        
         if(data.length % numObjects == 0){
             data.forEach((custom,index)=>{  
                 custom = Object.assign(custom, dataAddress[index])
                 if(index % numObjects == 0){
-                    lot = lot + numObjects
+                    var lot = index
+                    lot = (lot + numObjects > data.length) ? data.length -1 : lot+numObjects
                     if(lot > data.length){
                         lot = data.length
                     }
                     task.push((callback)=>{
+                        console.log(`Processing ${index}-${lot} of ${data.length}`)
                         db.collection('total-data').insertMany(data.slice(index, lot), (error) => {
                             callback(error)
                         });
